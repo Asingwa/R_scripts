@@ -1,0 +1,136 @@
+---
+title: "Airquality_cleaning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Data Cleaning with R
+
+## Content Summary
+
+1. Exploring dataframe
+2. Data types
+3. Plotting to view correlations and for outlier identification
+4. Identifying and dealing with NAs
+
+```{r airquality}
+# Let us use a dataset that is availabe within base R
+
+data_to_clean <- airquality
+
+# We will start by exploring this data set in order to know various attributes about it. For instance
+# how many rows and columns does it have, what are the names of the columns and what are their data types.
+
+# Number of columns and rows
+length(data_to_clean)
+ncol(data_to_clean)
+
+length(data_to_clean[,1])
+nrow(data_to_clean)
+
+dim(data_to_clean)
+
+# Names of columns
+names(data_to_clean)
+```
+
+
+```{r}
+
+# Structure of dataframe
+str(data_to_clean)
+
+dplyr::glimpse(data_to_clean)
+
+```
+
+In the case where you want to know the data type of the object you are working on
+
+```{r}
+ 
+class(data_to_clean)
+
+class(data_to_clean$Wind)
+class(data_to_clean$Month)
+
+```
+```{r}
+# Note that month has been categorised as type integer. We would like this to be factor or categorical.
+
+data_to_clean$Month <- as.factor(data_to_clean$Month)
+class(data_to_clean$Month)
+
+```
+Sometimes it is necessary to leave the categorical variables with numerical values. However, let's say that in
+our case, we would like the variable month to be indicated by the month name. Let's change this.
+```{r}
+levels(data_to_clean$Month) # To see the levels. Notice that they are not stored as integers but as string
+
+levels(data_to_clean$Month) <- list(May = "5", June="6", July="7", August="8", September = "9")
+levels(data_to_clean$Month)
+```
+
+
+```{r}
+# We may want to know the number of observation per category of a variable. In our instance use could use Month.
+xtabs(~data_to_clean$Month, data = data_to_clean)
+
+# To present this data into a data frame simply...
+as.data.frame(xtabs(~data_to_clean$Month, data = data_to_clean))
+```
+
+## Using plotting to explore data and detect outliers
+Part of exploring data is identifying relationships between the variables in our dataframe. Scatter plots help us to visualize data and detect possible correlations.
+
+```{r}
+plot(data_to_clean)
+```
+Are there any variables that seem to be correlated?
+
+Let us focus on the relationship between Ozone and Temperature.
+```{r}
+
+attach(data_to_clean) # Fun tip: When using one data set it can be convenient to store the variables in working memory so that you don't have to use '$' all through. Remember to detach() to remove it from working memory.
+
+plot(Ozone, Temp)
+```
+We can see outliers here. It is possible to determine those outliers from the scatter plot.
+
+```{r}
+attach(data_to_clean)
+plot(Ozone, Temp)
+outlier_index <- identify(data_to_clean$Ozone, data_to_clean$Temp) # This allows you to click on points of interest on a plot and store their index.
+
+# Click the outliers and once done click FINISH.
+# The points will be indicated by their index values.
+# To label the points with other values, for instance, the month
+plot(Ozone, Temp)
+outlier_index <- identify(Ozone, Temp, labels = Month, plot=TRUE)
+
+# Dealing with outliers is beyond the scope of this lab session. :-)
+
+# paste(as.character(Date), "_", as.character(Month))
+detach(data_to_clean)
+
+```
+ Now let's try some summary stats
+```{r}
+
+summary(data_to_clean)
+
+
+```
+ Here we get the summary stats. However, notice that there are NA values. How do NA values affect analysis?
+ 
+```{r}
+1+NA
+
+mean(data_to_clean$Ozone)
+```
+So how does summary() find the mean then?
+```{r}
+mean(data_to_clean$Ozone, na.rm = TRUE)
+```
+
